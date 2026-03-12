@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metal Archives — Mobile CSS Bookmarklet</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 20px 16px 60px;
+      background: #111;
+      color: #ddd;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    h1 { color: #c00; font-size: 1.4em; margin-bottom: 4px; }
+    h2 { color: #aaa; font-size: 1em; font-weight: normal; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 16px; }
+    h3 { color: #c00; font-size: 1em; margin: 24px 0 8px; }
+    p  { margin: 8px 0; color: #bbb; }
+    ol, ul { padding-left: 20px; color: #bbb; }
+    li { margin: 6px 0; }
+    code { background: #222; color: #fa0; padding: 2px 5px; border-radius: 3px; font-size: 0.9em; }
+
+    /* The draggable bookmarklet link */
+    .bookmarklet-link {
+      display: inline-block;
+      background: #c00;
+      color: #fff !important;
+      text-decoration: none;
+      padding: 12px 22px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1em;
+      margin: 16px 0;
+      border: 2px solid #900;
+      cursor: grab;
+      user-select: none;
+    }
+    .bookmarklet-link:hover { background: #a00; }
+
+    /* Copy-paste textarea for iOS */
+    textarea {
+      width: 100%;
+      height: 120px;
+      background: #1a1a1a;
+      color: #fa0;
+      border: 1px solid #444;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: monospace;
+      padding: 10px;
+      box-sizing: border-box;
+      resize: vertical;
+      white-space: nowrap;
+    }
+    .copy-btn {
+      display: inline-block;
+      margin-top: 8px;
+      background: #333;
+      color: #ddd;
+      border: 1px solid #555;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+    .copy-btn:active { background: #555; }
+    .copy-btn.copied { background: #060; color: #fff; border-color: #080; }
+
+    .note {
+      background: #1a1a1a;
+      border-left: 3px solid #c00;
+      padding: 10px 14px;
+      border-radius: 0 4px 4px 0;
+      margin: 16px 0;
+      font-size: 0.9em;
+    }
+    .platform-badge {
+      display: inline-block;
+      font-size: 0.75em;
+      background: #333;
+      color: #aaa;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    hr { border: none; border-top: 1px solid #333; margin: 28px 0; }
+  </style>
+</head>
+<body>
+
+  <h1>Metal Archives — Mobile CSS Bookmarklet</h1>
+  <h2>Works in any browser that supports bookmarklets, including iOS Safari</h2>
+
+  <!-- ── DESKTOP INSTRUCTIONS ──────────────────────────────────────────── -->
+  <h3>Desktop <span class="platform-badge">Chrome · Firefox · Edge · Safari</span></h3>
+  <p>Drag the button below into your bookmarks bar. Then tap it any time you're on Metal Archives.</p>
+  <!-- The href is set by the script below -->
+  <a id="bookmarklet-link" class="bookmarklet-link" title="Drag me to your bookmarks bar">
+    ⚡ MA Mobile Fix
+  </a>
+
+  <hr>
+
+  <!-- ── iOS INSTRUCTIONS ───────────────────────────────────────────────── -->
+  <h3>iOS Safari <span class="platform-badge">iPhone · iPad</span></h3>
+  <p>Safari on iOS doesn't allow dragging links to bookmarks. Follow these steps instead:</p>
+  <ol>
+    <li>Tap the <strong>Copy</strong> button below to copy the bookmarklet code.</li>
+    <li>In Safari, bookmark <em>any</em> page (tap the share icon → <em>Add Bookmark</em>).</li>
+    <li>Open <strong>Bookmarks</strong> → find the bookmark you just created → tap <strong>Edit</strong>.</li>
+    <li>Clear the URL field and paste the copied code. Save.</li>
+    <li>Now visit Metal Archives, open bookmarks, and tap <em>MA Mobile Fix</em>.</li>
+  </ol>
+
+  <div class="note">
+    <strong>Tip:</strong> The bookmarklet only applies for the current page load.
+    You need to tap it once on each new page you visit, or after a full refresh.
+    For a persistent solution, use the <code>.user.js</code> file with
+    Tampermonkey (available on the iOS App Store as a Safari extension).
+  </div>
+
+  <textarea id="bookmarklet-code" readonly spellcheck="false" aria-label="Bookmarklet code to copy"></textarea>
+  <br>
+  <button class="copy-btn" id="copy-btn" onclick="copyCode()">Copy bookmarklet code</button>
+
+  <hr>
+
+  <!-- ── OTHER BROWSERS ON iOS ─────────────────────────────────────────── -->
+  <h3>Orion Browser <span class="platform-badge">iOS</span></h3>
+  <p>Orion supports the Stylus and Tampermonkey extensions natively.
+     Use <code>metal-archives-mobile.css</code> in Stylus, or
+     <code>metal-archives-mobile.user.js</code> in Tampermonkey —
+     no bookmarklet needed.</p>
+
+  <script>
+    // ── Minified CSS (attribute selectors use unquoted values for safe JS embedding) ──
+    const css = [
+      'html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}',
+      'body{min-width:0!important;max-width:100%!important;width:100%!important;overflow-x:hidden;margin:0!important;padding:0!important;font-size:15px;line-height:1.5}',
+      '*{box-sizing:border-box}',
+      '@media(max-width:768px){',
+        '#wrapper,#page,#main,#mainContent,#content,.wrapper,.container{width:100%!important;max-width:100%!important;min-width:0!important;margin:0 auto!important;padding:0 8px!important}',
+        '#content_wrapper,#left_column,#right_column{width:100%!important;float:none!important;margin:0!important;padding:0!important}',
+        '#header,#header_wrapper{width:100%!important;min-width:0!important;padding:8px!important;text-align:center}',
+        '#logoContainer,.logoContainer,#header img,#header_wrapper img{max-width:240px!important;width:100%!important;height:auto!important;display:block;margin:0 auto 8px!important}',
+        '#header form,#searchContent form,#search_form{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0}',
+        '#header input[type=text],#header input[type=search],#searchContent input[type=text],#search_form input[type=text]{width:100%;max-width:340px;font-size:16px;padding:8px 10px;border-radius:4px}',
+        '#header select,#searchContent select,#search_form select{font-size:16px;padding:8px 6px;width:100%;max-width:220px}',
+        '#header input[type=submit],#header button,#searchContent input[type=submit],#search_form input[type=submit]{padding:8px 16px;font-size:15px;touch-action:manipulation;min-height:44px}',
+        '#navContent,#nav,nav,.nav,.navigation{width:100%!important;min-width:0!important;background:#1a1a1a}',
+        '#navContent ul,#nav ul,nav ul{display:flex!important;flex-wrap:wrap;list-style:none;margin:0;padding:0;gap:2px;background:#1a1a1a}',
+        '#navContent ul li,#nav ul li,nav ul li{flex:1 1 auto;text-align:center;min-width:70px}',
+        '#navContent ul li a,#nav ul li a,nav ul li a{display:block;padding:10px 8px;font-size:13px;white-space:nowrap;text-decoration:none;min-height:44px;line-height:24px;touch-action:manipulation}',
+        '#navContent ul li ul,#nav ul li ul,nav ul li ul{position:static!important;display:none;flex-direction:column;width:100%;background:#222;box-shadow:none}',
+        '#navContent ul li:hover ul,#navContent ul li:focus-within ul,#nav ul li:hover ul,#nav ul li:focus-within ul,nav ul li:hover ul,nav ul li:focus-within ul{display:flex!important}',
+        '#navContent ul li ul li,#nav ul li ul li,nav ul li ul li{width:100%;min-width:0}',
+        'table.display,table.datatable,.display_table,table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%!important;min-width:0!important;max-width:100%;border-collapse:collapse}',
+        '.dataTables_wrapper,.dataTable_wrapper{width:100%!important;overflow-x:auto;-webkit-overflow-scrolling:touch}',
+        '.dataTables_length,.dataTables_filter,.dataTables_info,.dataTables_paginate{display:block!important;width:100%!important;text-align:left!important;margin:6px 0!important;font-size:13px}',
+        '.dataTables_filter input{font-size:16px;padding:6px 8px;width:100%;max-width:260px}',
+        '.dataTables_paginate .paginate_button{padding:6px 10px!important;min-height:36px;font-size:13px;display:inline-block}',
+        'table td,table th{padding:6px 8px!important;font-size:13px;white-space:nowrap}',
+        '#band_info,#band_stats,#band_tab_album,.band_header{width:100%!important;float:none!important;display:block!important;margin:0 0 12px!important;padding:8px!important}',
+        '#band_logo,.band_logo img{max-width:200px!important;width:100%!important;height:auto!important;display:block;margin:0 auto 12px!important;float:none!important}',
+        '#band_tab_members img,.member_img{max-width:100px!important;height:auto!important}',
+        '#band_info h1,.band_name{font-size:1.5em!important;word-break:break-word;text-align:center}',
+        '#band_stats dl,.band_stats dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:0;margin:0}',
+        '#band_stats dt,.band_stats dt{font-weight:bold;text-align:right}',
+        '#band_stats dd,.band_stats dd{margin:0;text-align:left}',
+        '#album_info,.album_info{width:100%!important;float:none!important;display:block!important;padding:8px!important}',
+        '#album_info #cover,.album_cover,#cover img{max-width:220px!important;width:100%!important;height:auto!important;display:block;margin:0 auto 12px!important;float:none!important}',
+        '#album_tab_tracklist table{font-size:13px}',
+        '#album_tab_reviews .reviewBox{width:100%!important;float:none!important;margin:0 0 16px!important}',
+        '.ui-tabs .ui-tabs-nav{display:flex!important;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap!important;white-space:nowrap;padding:0!important;gap:4px}',
+        '.ui-tabs .ui-tabs-nav li{flex:0 0 auto}',
+        '.ui-tabs .ui-tabs-nav li a{font-size:13px;padding:8px 12px!important;display:block;min-height:40px;line-height:24px;touch-action:manipulation}',
+        '.ui-tabs-panel{padding:8px!important}',
+        '#alpha_list,.alpha_list{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;padding:8px 0}',
+        '#alpha_list a,.alpha_list a{padding:6px 10px;font-size:15px;display:inline-block;min-width:36px;text-align:center;min-height:36px;line-height:24px;touch-action:manipulation}',
+        '#bandListFilters,.band_filters,#searchForm{display:flex;flex-direction:column;gap:8px;padding:8px 0}',
+        '#bandListFilters select,.band_filters select,#searchForm select{font-size:16px;padding:8px 6px;width:100%}',
+        '#bandListFilters input[type=submit],.band_filters input[type=submit],#searchForm input[type=submit]{font-size:15px;padding:10px;min-height:44px;width:100%;touch-action:manipulation}',
+        '#homepage_additions,.homepage_additions,#newsBanner,.newsBanner{width:100%!important;float:none!important;margin:0 0 16px!important;padding:8px!important}',
+        '#stats_wrapper,.stats_wrapper{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}',
+        '.stat_box,.statBox{flex:1 1 120px;text-align:center;padding:8px}',
+        '#recent_additions table,.recent_additions table{font-size:12px}',
+        'img{max-width:100%;height:auto}',
+        'a{touch-action:manipulation}',
+        'input[type=button],input[type=submit],button,.btn,.button{min-height:44px;min-width:44px;touch-action:manipulation;padding:8px 14px}',
+        '.ui-autocomplete{max-width:calc(100vw - 16px)!important;overflow-x:hidden;font-size:14px}',
+        '.ui-autocomplete li{padding:10px 12px!important;min-height:44px;line-height:24px}',
+        '#footer,.footer{width:100%!important;min-width:0!important;padding:12px 8px!important;font-size:12px;text-align:center}',
+        '#footer a,.footer a{padding:4px 6px;display:inline-block;min-height:36px;line-height:28px}',
+        '#fancybox-wrap,.fancybox-wrap,.fancybox-inner{max-width:100vw!important;width:100vw!important;left:0!important;right:0!important;margin:0 auto!important}',
+        '.fancybox-inner img{max-width:100%!important;height:auto!important}',
+        '.spacer,.clear{height:8px!important;display:block}',
+        '.postContainer,.forumPost{display:flex!important;flex-direction:column!important}',
+        '.postContainer .postInfo,.forumPost .postInfo{width:100%!important;float:none!important;border-bottom:1px solid #444;margin-bottom:8px}',
+        '.postContainer .postContent,.forumPost .postContent{width:100%!important;float:none!important}',
+        '#forumPosts table,.forumTable{font-size:13px}',
+        'p,td,li,dd{word-break:break-word;overflow-wrap:break-word}',
+      '}',
+      '@media(max-width:480px){',
+        'body{font-size:14px}',
+        'h1{font-size:1.4em}h2{font-size:1.2em}h3{font-size:1.1em}',
+        'h1,h2,h3,h4,.band_name,.album_name{word-break:break-word;overflow-wrap:break-word;hyphens:auto}',
+      '}'
+    ].join('');
+
+    // Build the bookmarklet javascript: URL
+    const js = `(function(){var e=document.getElementById('ma-mobile-css');if(e){e.remove();return;}var s=document.createElement('style');s.id='ma-mobile-css';s.textContent=${JSON.stringify(css)};document.head.appendChild(s);})();`;
+    const bookmarkletUrl = 'javascript:' + encodeURIComponent(js);
+
+    // Set the <a> href (desktop drag-to-bookmark)
+    const link = document.getElementById('bookmarklet-link');
+    link.href = bookmarkletUrl;
+    // Prevent navigation when clicked — bookmarklets are meant to be dragged/saved, not clicked here
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      alert('Drag this button to your bookmarks bar (desktop), or use the Copy button below for iOS.');
+    });
+
+    // Fill the textarea for iOS copy-paste
+    document.getElementById('bookmarklet-code').value = bookmarkletUrl;
+
+    // Copy button
+    function copyCode() {
+      const ta = document.getElementById('bookmarklet-code');
+      const btn = document.getElementById('copy-btn');
+      ta.select();
+      ta.setSelectionRange(0, 99999);
+      try {
+        navigator.clipboard.writeText(ta.value).then(() => {
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = 'Copy bookmarklet code'; btn.classList.remove('copied'); }, 2000);
+        });
+      } catch (_) {
+        document.execCommand('copy');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy bookmarklet code'; btn.classList.remove('copied'); }, 2000);
+      }
+    }
+    window.copyCode = copyCode;
+
+    // Note: tapping the bookmarklet a second time removes the styles (toggle).
+  </script>
+
+</body>
+</html>
